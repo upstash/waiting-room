@@ -42,7 +42,14 @@ wrangler publish
 ```
 
 ## How to 
-  
+
+### Integrate with an existing site
+Your domain's nameservers should point to Cloudflare. Check [here](https://developers.cloudflare.com/automatic-platform-optimization/get-started/change-nameservers). In the Workers dashboard, you need to add your domain as a route and select your Workers function.
+
+![workers router](workers-route.png "workers-route.png")
+
+
+
 ### Customize the Waiting Room HTML
 Open index.js and edit the `waiting_room_html` variable at the bottom.
 

@@ -1,4 +1,9 @@
 import { parse } from 'cookie'
+import { auth, dbsize, get, setex } from 'upstash-redis'
+
+
+auth(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)
+
 
 addEventListener('fetch', (event) => {
   event.respondWith(
@@ -8,7 +13,8 @@ addEventListener('fetch', (event) => {
   )
 })
 
-const COOKIE_NAME = '__waiting_room_id'
+const COOKIE_NAME_ID = '__waiting_room_id'
+const COOKIE_NAME_TIME = '__waiting_room_last_update_time'
 
 const init = {
   headers: {
@@ -22,25 +28,21 @@ async function handleRequest(request) {
     const cookie = parse(request.headers.get('Cookie') || '')
     let userId
 
-    if (cookie[COOKIE_NAME] != null) {
-      userId = cookie[COOKIE_NAME]
+    if (cookie[COOKIE_NAME_ID] != null) {
+      userId = cookie[COOKIE_NAME_ID]
     } else {
       userId = makeid(8)
     }
 
-
-    let res = await fetch(UPSTASH_REDIS_REST_URL + 'dbsize', init)
-    let obj = await res.json()
-    console.log('current capacity:' + obj.result)
+    let res = await dbsize()
+    console.log('current capacity:' + res.data)
     // there is enough capacity
-    if (obj.result < TOTAL_ACTIVE_USERS) {
-      await fetch(UPSTASH_REDIS_REST_URL + `set/${userId}/1/EX/${SESSION_DURATION_SECONDS}`, init)
-      return getDefaultResponse(request, userId)
+    if (res.data < TOTAL_ACTIVE_USERS) {
+      return getDefaultResponse(request, cookie, userId)
     } else {  // site capacity is full
-      let res2 = await fetch(UPSTASH_REDIS_REST_URL + `get/${userId}`, init)
-      let obj2 = await res2.json()
-      if (obj2.result === '1') { // the user has already active session
-        return getDefaultResponse(request, userId)
+      let obj2 = await get(userId)
+      if (obj2.data === '1') { // the user has already active session
+        return getDefaultResponse(request, cookie, userId)
       } else { // capacity is full so the user is forwarded to waiting room
         return getWaitingRoomResponse(userId)
       }
@@ -51,18 +53,28 @@ async function handleRequest(request) {
   }
 }
 
-async function getDefaultResponse(request, userId) {
+async function getDefaultResponse(request, cookie, userId) {
   const response = await fetch(request)
   const newResponse = new Response(response.body, response)
   // uncomment below to test in your local
   // const newResponse = new Response("Hello World!!", response)
-  newResponse.headers.append('Set-Cookie', `${COOKIE_NAME}=${userId}; path=/`)
+  const now = Date.now()
+  let lastUpdate = cookie[COOKIE_NAME_TIME]
+  if(!lastUpdate)
+    lastUpdate = 0;
+  const diff = now - lastUpdate;
+  const updateInterval = SESSION_DURATION_SECONDS * 1000 / 2;
+  if ( diff > updateInterval) {
+    await setex(userId, SESSION_DURATION_SECONDS, 1)
+    newResponse.headers.append('Set-Cookie', `${COOKIE_NAME_TIME}=${now}; path=/`)
+  }
+
+  newResponse.headers.append('Set-Cookie', `${COOKIE_NAME_ID}=${userId}; path=/`)
   return newResponse
 }
 
 async function getWaitingRoomResponse(userId) {
   const newResponse = new Response(waiting_room_html)
-  newResponse.headers.append('Set-Cookie', `${COOKIE_NAME}=${userId}; path=/`)
   newResponse.headers.append('content-type', 'text/html;charset=UTF-8')
   return newResponse
 }
@@ -82,7 +94,7 @@ function makeid(length) {
 const waiting_room_html = `<!DOCTYPE html>
 <head>
         <title>Waiting Room</title>
-        <meta http-equiv='refresh' content='5' />
+        <meta http-equiv='refresh' content='30' />
     </head>
 <body>
   <h2>You are now in line.</h2>

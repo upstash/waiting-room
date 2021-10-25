@@ -1,0 +1,14 @@
+name = "waiting-room"
+type = "webpack"
+
+account_id = "REPLACE_HERE"
+workers_dev = true
+route = ""
+zone_id = ""
+
+[vars]
+UPSTASH_REDIS_REST_TOKEN = "REPLACE_HERE="
+UPSTASH_REDIS_REST_URL = "REPLACE_HERE"
+TOTAL_ACTIVE_USERS = 10
+SESSION_DURATION_SECONDS = 30
+

@@ -91,15 +91,18 @@ function makeid(length) {
   return result
 }
 
-const waiting_room_html = `<!DOCTYPE html>
-<head>
-        <title>Waiting Room</title>
-        <meta http-equiv='refresh' content='30' />
-    </head>
-<body>
-  <h2>You are now in line.</h2>
-  <h2>Thanks for your patience.</h2>
+const waiting_room_html = `
+<title>Waiting Room</title>
+<meta http-equiv='refresh' content='30' />
+
+<style>*{box-sizing:border-box;margin:0;padding:0}body{line-height:1.4;font-size:1rem;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;padding:2rem;display:grid;place-items:center;min-height:100vh}.container{width:100%;max-width:800px}p{margin-top:.5rem}</style>
+
+<div class="container">
+  <h1>
+    <div>You are now in line.</div>
+    <div>Thanks for your patience.</div>
+  </h1>
   <p>We are experiencing a high volume of traffic. Please sit tight and we will let you in soon. </p>
-  
-  <h4>This page will automatically refresh, please do not close your browser.</h4>
-</body>`
+  <p><b>This page will automatically refresh, please do not close your browser.</b></p>
+</div>
+`;

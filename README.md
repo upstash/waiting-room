@@ -1,6 +1,6 @@
 # Waiting Room with Cloudflare Workers and Upstash Redis
               
-This project is an open source implementation of a waiting room for websites. You can set a maximum capacity for your web site and when the capacity is full, new users are forwarded to the waiting room page. When new spots are available, waiting users are allowed to the site. It is similar to [Cloudflare Waiting Room](https://www.cloudflare.com/waiting-room/) but free and open source.
+This is an implementation of a waiting room for websites. You can set a maximum capacity for your web site and when the capacity is full, new users are forwarded to the waiting room page. When new spots are available, waiting users are allowed to the site. It is similar to [Cloudflare Waiting Room](https://www.cloudflare.com/waiting-room/) but free and open source.
 
 ## How to set up?
 You need Cloudflare and Upstash account. We use Cloudflare Workers to intercept the web requests and Upstash Redis to keep session information.
@@ -46,4 +46,10 @@ Open index.js and edit the `waiting_room_html` variable at the bottom.
 
 ### Forward all visitors to the waiting room
 Set `TOTAL_ACTIVE_USERS` to 0. So all users will be forwarded to waiting room. This might be useful when you are doing some temporary maintenance. 
+
+## TODO
+
+- Calculate and show estimated waiting time.
+
+- Fairness for waiting users. Current implementation randomly lets waiting users in to the site.   
 

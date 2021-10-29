@@ -6,6 +6,8 @@ You can set a maximum capacity for your web site and when the capacity is full, 
 
 Check [the demo](https://waiting-room.upsdev.workers.dev/). For testing purposes the site's capacity is 1. When you visit the link you will see you are forwarded to the waiting room. If not, use another browser.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/upstash/waiting-room)
+
 ## How to set up?
 You need Cloudflare and Upstash account. We use Cloudflare Workers to intercept the web requests and Upstash Redis to keep session information.
 

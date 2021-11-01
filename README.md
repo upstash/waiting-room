@@ -36,7 +36,10 @@ Update the below fields in `wrangler.toml`:
 ```shell
 wrangler dev
 ```
-You can set `TOTAL_ACTIVE_USERS` to 1 for ease of testing. Browse the page from two different browsers, at the latest attempt, you should see the waiting room.
+You can set `TOTAL_ACTIVE_USERS` to 1 for ease of testing. Browse the page from two different browsers (e.g. Chrome then Safari), at the latest attempt, you should see the waiting room.
+
+![waitingroom](waitingroom.png "waitingroom.png")
+
 
 ### Deploy
 ```shell

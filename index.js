@@ -1,5 +1,5 @@
 import { parse } from 'cookie'
-import { auth, dbsize, get, setex } from 'upstash-redis'
+import { auth, dbsize, get, setex } from '@upstash/redis'
 
 
 auth(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)
@@ -77,7 +77,7 @@ async function getDefaultResponse(request, cookie, userId) {
 
 async function getWaitingRoomResponse(userId) {
   const newResponse = new Response(waiting_room_html)
-  newResponse.headers.append('content-type', 'text/html;charset=UTF-8')
+  newResponse.headers.set('content-type', 'text/html;charset=UTF-8')
   return newResponse
 }
 

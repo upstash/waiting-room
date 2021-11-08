@@ -16,12 +16,6 @@ addEventListener('fetch', (event) => {
 const COOKIE_NAME_ID = '__waiting_room_id'
 const COOKIE_NAME_TIME = '__waiting_room_last_update_time'
 
-const init = {
-  headers: {
-    'Authorization': 'Bearer ' + UPSTASH_REDIS_REST_TOKEN,
-  },
-}
-
 async function handleRequest(request) {
   const { pathname } = new URL(request.url)
   if (!pathname.startsWith('/favicon')) {

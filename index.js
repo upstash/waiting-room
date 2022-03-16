@@ -1,14 +1,12 @@
 import { parse } from 'cookie'
-import { auth, dbsize, get, setex } from '@upstash/redis'
+import { Redis } from '@upstash/redis/cloudflare'
 
+const redis = Redis.fromEnv()
 
-auth(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)
-
-
-addEventListener('fetch', (event) => {
+addEventListener('fetch', event => {
   event.respondWith(
     handleRequest(event.request).catch(
-      (err) => new Response(err.stack, { status: 500 }),
+      err => new Response(err.stack, { status: 500 }),
     ),
   )
 })
@@ -20,24 +18,21 @@ async function handleRequest(request) {
   const { pathname } = new URL(request.url)
   if (!pathname.startsWith('/favicon')) {
     const cookie = parse(request.headers.get('Cookie') || '')
-    let userId
+    const userId = cookie[COOKIE_NAME_ID] || crypto.randomUUID()
 
-    if (cookie[COOKIE_NAME_ID] != null) {
-      userId = cookie[COOKIE_NAME_ID]
-    } else {
-      userId = makeid(8)
-    }
-
-    let res = await dbsize()
-    console.log('current capacity:' + res.data)
+    const size = await redis.dbsize()
+    console.log('current capacity:' + size)
     // there is enough capacity
-    if (res.data < TOTAL_ACTIVE_USERS) {
+    if (size < TOTAL_ACTIVE_USERS) {
       return getDefaultResponse(request, cookie, userId)
-    } else {  // site capacity is full
-      let obj2 = await get(userId)
-      if (obj2.data === '1') { // the user has already active session
+    } else {
+      // site capacity is full
+      let hasActiveSession = await redis.get(userId)
+      if (hasActiveSession) {
+        // the user has already active session
         return getDefaultResponse(request, cookie, userId)
-      } else { // capacity is full so the user is forwarded to waiting room
+      } else {
+        // capacity is full so the user is forwarded to waiting room
         return getWaitingRoomResponse(userId)
       }
     }
@@ -55,17 +50,21 @@ async function getDefaultResponse(request, cookie, userId) {
   const newResponse = new Response(response.body, response)
 
   const now = Date.now()
-  let lastUpdate = cookie[COOKIE_NAME_TIME]
-  if (!lastUpdate)
-    lastUpdate = 0
+  const lastUpdate = cookie[COOKIE_NAME_TIME] || 0
   const diff = now - lastUpdate
-  const updateInterval = SESSION_DURATION_SECONDS * 1000 / 2
+  const updateInterval = (SESSION_DURATION_SECONDS * 1000) / 2
   if (diff > updateInterval) {
-    await setex(userId, SESSION_DURATION_SECONDS, 1)
-    newResponse.headers.append('Set-Cookie', `${COOKIE_NAME_TIME}=${now}; path=/`)
+    await redis.setex(userId, SESSION_DURATION_SECONDS, true)
+    newResponse.headers.append(
+      'Set-Cookie',
+      `${COOKIE_NAME_TIME}=${now}; path=/`,
+    )
   }
 
-  newResponse.headers.append('Set-Cookie', `${COOKIE_NAME_ID}=${userId}; path=/`)
+  newResponse.headers.append(
+    'Set-Cookie',
+    `${COOKIE_NAME_ID}=${userId}; path=/`,
+  )
   return newResponse
 }
 
@@ -75,17 +74,6 @@ async function getWaitingRoomResponse(userId) {
   return newResponse
 }
 
-
-function makeid(length) {
-  var result = ''
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  var charactersLength = characters.length
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() *
-      charactersLength))
-  }
-  return result
-}
 
 const waiting_room_html = `
 <title>Waiting Room</title>
@@ -102,7 +90,6 @@ const waiting_room_html = `
   <p><b>This page will automatically refresh, please do not close your browser.</b></p>
 </div>
 `
-
 
 const default_html = `
 <title>Waiting Room Demo</title>

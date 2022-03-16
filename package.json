@@ -14,7 +14,7 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
-    "@upstash/redis": "^0.1.22",
+    "@upstash/redis": "^1.0.1",
     "cookie": "^0.4.1"
   }
 }

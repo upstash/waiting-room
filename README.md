@@ -1,4 +1,9 @@
 # Waiting Room with Cloudflare Workers and Upstash Redis
+
+> [!NOTE]  
+> **This project is a Community Project.**
+>
+> The project is maintained and supported by the community. Upstash may contribute but does not officially support or assume responsibility for it.
               
 Waiting room helps you to manage peak traffic and protect your origin servers from being overwhelmed with requests. 
 
